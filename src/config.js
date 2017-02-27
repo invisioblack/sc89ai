@@ -1,6 +1,5 @@
-var limits = [
-    //Limits per room
+'use strict';
 
-];
-
-//Game.spawns['Spawn1'].room.createConstructionSite( 23, 22, STRUCTURE_TOWER );
+global.roles = {};
+global.sc89functions = {};
+global.brain = {};
