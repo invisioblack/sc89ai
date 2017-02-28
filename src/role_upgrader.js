@@ -25,6 +25,17 @@ roles.upgrader.run = function (creep) {
         //    return;
         //}
 
+
+        var storage = creep.pos.findClosestByPath(FIND_STRUCTURES, {
+            filter: (structure) => {
+                return (structure.structureType == STRUCTURE_STORAGE);
+            }
+        });
+        if(creep.withdraw(storage, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+            creep.moveTo(storage);
+            return;
+        }
+
         var dropped_energy = creep.pos.findClosestByPath(FIND_DROPPED_ENERGY);
         if (dropped_energy && creep.pickup(dropped_energy) == ERR_NOT_IN_RANGE) {
             creep.moveTo(dropped_energy);

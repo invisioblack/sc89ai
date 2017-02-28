@@ -16,17 +16,17 @@ roles.carrier.run = function(creep) {
     }
 
     if(!creep.memory.unloading) {
-
-        let room_sources =  Memory.rooms[creep.room.name].sources;
-        for(var source in room_sources){
-            if(Memory.rooms[creep.room.name].sources[source].workers > 0){
-                source = id
-            }
-        }
-
-
-        console.log('Sources: ' + JSON.stringify(source[0].id));
-        console.log(creep.pos.getRangeTo(source.pos));
+        //
+        //let room_sources =  Memory.rooms[creep.room.name].sources;
+        //for(var source in room_sources){
+        //    if(Memory.rooms[creep.room.name].sources[source].workers > 0){
+        //        source = id
+        //    }
+        //}
+        //
+        //
+        //console.log('Sources: ' + JSON.stringify(source[0].id));
+        //console.log(creep.pos.getRangeTo(source.pos));
         if(creep.pos.getRangeTo(creep.memory.source) > 2) {
             creep.say('Moving');
             creep.moveTo(creep.memory.source);
@@ -53,21 +53,31 @@ roles.carrier.run = function(creep) {
         });
 
         if(target === null){
-            if(creep.pos.getRangeTo(creep.room.controller) > 1) {
-                creep.moveTo(store_pos.x, store_pos.y);
-                return;
-            } else {
-                if(creep.carry.energy > 0){
-                    creep.drop(RESOURCE_ENERGY);
-                    creep.memory.unloading = false;
-                    return;
+            var storage = creep.pos.findClosestByPath(FIND_STRUCTURES, {
+                filter: (structure) => {
+                    return (structure.structureType == STRUCTURE_STORAGE);
                 }
+            });
+            if(creep.transfer(storage, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+                creep.moveTo(storage);
+                return;
             }
+            //
+            //if(creep.pos.getRangeTo(creep.room.controller) > 1) {
+            //    creep.moveTo(store_pos.x, store_pos.y);
+            //    return;
+            //} else {
+            //    if(creep.carry.energy > 0){
+            //        creep.drop(RESOURCE_ENERGY);
+            //        creep.memory.unloading = false;
+            //        return;
+            //    }
+            //}
         } else {
             if(creep.transfer(target, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
                 creep.moveTo(target);
+                return;
             }
-            return;
         }
     }
 };

@@ -17,8 +17,8 @@ function build(spawn, structureType) {
 
 
 exports.run = function(spawn) {
-    //build(spawn, STRUCTURE_EXTENSION);
-    //build(spawn, STRUCTURE_TOWER);
+    build(spawn, STRUCTURE_EXTENSION);
+    build(spawn, STRUCTURE_TOWER);
 
 
     if(spawn.room.energyAvailable >= 300){
