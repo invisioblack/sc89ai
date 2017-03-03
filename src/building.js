@@ -17,9 +17,10 @@ function build(spawn, structureType) {
 
 
 exports.run = function(spawn) {
-    build(spawn, STRUCTURE_EXTENSION);
-    build(spawn, STRUCTURE_TOWER);
-
+    //build(spawn, STRUCTURE_EXTENSION);
+    //build(spawn, STRUCTURE_TOWER);
+    sc89functions.planWalls(spawn.room);
+    sc89functions.checkStore(spawn.room);
 
     if(spawn.room.energyAvailable >= 300){
 
@@ -56,6 +57,8 @@ exports.run = function(spawn) {
 
         if(spawn.room.find(FIND_CONSTRUCTION_SITES).length > 0) {
             spawn.createCreep(workerBody, 'b1', {role: 'stucturer'});
+            spawn.createCreep(workerBody, 'b2', {role: 'stucturer'});
+            spawn.createCreep(workerBody, 'b3', {role: 'stucturer'});
         }
 
     }

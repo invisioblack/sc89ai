@@ -112,28 +112,41 @@ brain.memory.do_carriers = function (room, refresh) {
 };
 
 brain.memory.do_controllers = function (room, refresh) {
-    //If this room has no sources memory yet
-    if (!room.memory.controllers) {
-        //Add it
-        room.memory.controllers = {};
-        room.controller.memory = room.memory.controllers[room.controller.id] = {};
-        room.controller.memory.workers = 0;
-        room.controller.memory.store = sc89functions.getRandomFreePos(room.controller.pos, 2);
-    } else {
-        //The memory already exists so lets add a shortcut to the sources its memory
-        //Set the shortcut
-        room.controller.memory = room.memory.controllers[room.controller.id];
-        //Check what workers are working in this room at this source
-        if (refresh) {
-            let workers = _.filter(Game.creeps, {
-                memory: {
-                    role: 'upgrader',
-                    target: room.controller.id
+    //Check there is a controller because there are rooms without
+    if(room.controller !== undefined) {
+        //If this room has no controller memory yet
+        if (!room.memory.controllers) {
+            //Add it
+            room.memory.controllers = {};
+            room.controller.memory = room.memory.controllers[room.controller.id] = {};
+            room.controller.memory.workers = 0;
+            room.controller.memory.store = sc89functions.posNear(room.controller.pos.x, room.controller.pos.y);
+        } else {
+            //The memory already exists so lets add a shortcut to the sources its memory
+            //Set the shortcut
+            room.controller.memory = room.memory.controllers[room.controller.id];
+            //Check what workers are working in this room at this source
+            if (refresh) {
+                let workers = _.filter(Game.creeps, {
+                    memory: {
+                        role: 'upgrader',
+                        target: room.controller.id
+                    }
+                });
+                //just if the position is removed manually it will get re-added next time it refreshes
+                if(!room.controller.memory.store){
+                    room.controller.memory.store = sc89functions.posNear(room.controller.pos.x, room.controller.pos.y, room);
                 }
-            });
-            room.controller.memory.workers = _.size(workers);
+                room.controller.memory.workers = _.size(workers);
+            }
         }
     }
+
+    // if(config.visuals){
+    //     for (var n = 0; n < pos_free.length; n++) {
+    //         Game.rooms[room.name].visual.drawCross(pos_free[n].x,pos_free[n].y, {color: '#ff0000'});
+    //     }
+    // }
     return;
 };
 
