@@ -61,12 +61,18 @@ roles.harvester.run = function(creep) {
 /** @param {Spawn} spawn **/
 /** @param {source_id} id of the source **/
 roles.harvester.build = function(spawn, source_id) {
-    var pattern = [WORK,CARRY];
+    var pattern = {
+        move: 2,
+        work: 7,
+        carry: 5
+    };
     var body = sc89functions.generate_body(pattern, spawn);
-    if(spawn.canCreateCreep(body) == 0){
+    if(spawn.canCreateCreep(body) == 0 && spawn.spawning === null){
         console.log('Spawning Harvester for source: ' + source_id + ' with body: ' + JSON.stringify(body));
-        spawn.createCreep(body, null, {role: 'harvester', source: source_id});
+        spawn.createCreep(body.sort(), null, {role: 'harvester', source: source_id});
         return true;
+    } else {
+        console.log('Problem spawning harvester');
     }
     return false;
 };

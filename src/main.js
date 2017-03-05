@@ -36,6 +36,7 @@ module.exports.loop = function () {
                 building.run(spawns[i]);
             }
 
+
             //Do tower code
             var towers = Game.rooms[room].find(FIND_STRUCTURES, {filter: {structureType: STRUCTURE_TOWER, my: true}});
             towers.forEach(tower.run);

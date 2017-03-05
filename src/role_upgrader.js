@@ -53,11 +53,15 @@ roles.upgrader.run = function (creep) {
 /** @param {Spawn} spawn **/
 /** @param {source_id} id of the source **/
 roles.upgrader.build = function(spawn, controller) {
-    var pattern = [WORK,CARRY];
+    var pattern = {
+        move: 2,
+        work: 15,
+        carry: 5
+    };
     var body = sc89functions.generate_body(pattern, spawn);
-    if(spawn.canCreateCreep(body) == 0){
+    if(spawn.canCreateCreep(body) == 0 && spawn.spawning === null){
         console.log('Spawning upgrader for controller with body: ' + JSON.stringify(body));
-        spawn.createCreep(body, null, {role: 'upgrader', target: controller.id});
+        spawn.createCreep(body.sort(), null, {role: 'upgrader', target: controller.id});
         return true;
     }
     return false;

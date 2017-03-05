@@ -46,9 +46,11 @@ brain.memory.build_rooms = function (refresh) {
         //Do sources
         brain.memory.do_sources(room, refresh);
         brain.memory.do_carriers(room, refresh);
+        brain.memory.do_fixer(room, refresh);
         brain.memory.do_controllers(room, refresh);
         brain.memory.check_controlled(room, refresh);
         brain.memory.check_reserved(room, refresh);
+        brain.memory.do_roads(room, refresh);
     }
 
     Memory.last_room_refresh = Game.time;
@@ -111,6 +113,23 @@ brain.memory.do_carriers = function (room, refresh) {
     return;
 };
 
+brain.memory.do_fixer = function (room, refresh) {
+    //If this room has no sources memory yet
+    if (!room.memory.fixer || refresh) {
+        //Add it
+        room.memory.fixer = {};
+        let fixers = _.filter(Game.creeps, {
+            memory: {
+                role: 'fixer',
+                room: room.name
+            }
+        });
+        console.log()
+        room.memory.fixer = _.size(fixers);
+    }
+    return;
+};
+
 brain.memory.do_controllers = function (room, refresh) {
     //Check there is a controller because there are rooms without
     if(room.controller !== undefined) {
@@ -148,6 +167,12 @@ brain.memory.do_controllers = function (room, refresh) {
     //     }
     // }
     return;
+};
+
+brain.memory.do_roads = function(room, refresh){
+    if(!room.memory.roads || refresh){
+        room.memory.roads = sc89functions.planRoads(room);
+    }
 };
 
 brain.memory.check_controlled = function (room, refresh) {
