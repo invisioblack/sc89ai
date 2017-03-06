@@ -51,6 +51,8 @@ brain.memory.build_rooms = function (refresh) {
         brain.memory.check_controlled(room, refresh);
         brain.memory.check_reserved(room, refresh);
         brain.memory.do_roads(room, refresh);
+        brain.memory.do_extensions(room, refresh);
+
     }
 
     Memory.last_room_refresh = Game.time;
@@ -139,7 +141,7 @@ brain.memory.do_controllers = function (room, refresh) {
             room.memory.controllers = {};
             room.controller.memory = room.memory.controllers[room.controller.id] = {};
             room.controller.memory.workers = 0;
-            room.controller.memory.store = sc89functions.posNear(room.controller.pos.x, room.controller.pos.y);
+            room.controller.memory.store = sc89functions.posNear(room.controller.pos.x, room.controller.pos.y, room, true);
         } else {
             //The memory already exists so lets add a shortcut to the sources its memory
             //Set the shortcut
@@ -154,7 +156,7 @@ brain.memory.do_controllers = function (room, refresh) {
                 });
                 //just if the position is removed manually it will get re-added next time it refreshes
                 if(!room.controller.memory.store){
-                    room.controller.memory.store = sc89functions.posNear(room.controller.pos.x, room.controller.pos.y, room);
+                    room.controller.memory.store = sc89functions.posNear(room.controller.pos.x, room.controller.pos.y, room, true);
                 }
                 room.controller.memory.workers = _.size(workers);
             }
@@ -172,6 +174,18 @@ brain.memory.do_controllers = function (room, refresh) {
 brain.memory.do_roads = function(room, refresh){
     if(!room.memory.roads || refresh){
         room.memory.roads = sc89functions.planRoads(room);
+    }
+};
+
+brain.memory.do_extensions = function(room, refresh){
+    if(!room.memory.extensions || refresh){
+        room.memory.extensions = sc89functions.planExtensions(room);
+    }
+};
+
+brain.memory.do_road_exits = function(room, refresh){
+    if(!room.memory.road_exits || refresh){
+        room.memory.road_exits = sc89functions.getRoadExits(room);
     }
 };
 

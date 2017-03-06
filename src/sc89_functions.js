@@ -81,7 +81,8 @@ sc89functions.getExits = function (room, direction){
                 if(Game.map.getTerrainAt(n , 0 , room.name) === 'plain') {
                     exit_tiles.push({
                         x: n,
-                        y: 0
+                        y: 0,
+
                     });
                 }
             }
@@ -124,6 +125,69 @@ sc89functions.getExits = function (room, direction){
     return exit_tiles;
 };
 
+sc89functions.planExtensions = function(room){
+    var start_pos = room.controller.memory.store;
+    var roads = room.memory.roads;
+    var extension_list = [];
+    for(var n = 0; n < roads.length; n++){
+        var pos = sc89functions.posNear(roads[n].x, roads[n].y, room, false, 'extension');
+        for(var g = 0; g < pos.length; g++){
+            if(sc89functions.posInArray(pos[g], extension_list)){
+                continue;
+            }
+            extension_list.push(pos[g]);
+        }
+        if(extension_list.length >= 60){
+            return extension_list;
+        };
+    }
+
+    return extension_list;
+    //if(pos[0].type !== 'structure' && Game.map.getTerrainAt(x, y, room.name) === 'plain'){ }
+};
+
+sc89functions.posInArray = function(pos, array){
+    for(var n = 0; n < array.length; n++){
+        if(pos.x === array[n].x && pos.y === array[n].y){
+            return true;
+        }
+    }
+    return false;
+};
+
+sc89functions.getRoadExits = function (room, direction){
+    //find exits
+
+    var exit_points = [];
+    var exit_tiles = [];
+    var sides = ['top', 'bottom', 'left', 'right'];
+    for (var j = 0; j < sides.length; j++) {
+        exit_tiles.push(sc89functions.getExits(room, sides[j]));
+    }
+    //We have all the exit tiles so we need to go through each side and the first group in that side
+    var last_x = 0;
+    var last_y = 0;
+    for(var n = 0; n < sides.length; n++){
+        //determine the side?
+
+
+        var x = exit_tiles[n].x;
+        var y = exit_tiles[n].y;
+
+
+        if(x != last_x || x != last_x){
+
+        }
+
+
+
+        last_x = x;
+        last_y = y;
+    }
+
+    return exit_points;
+};
+
 sc89functions.planWalls = function (room) {
     //console.log(JSON.stringify(exit_tiles));
     //["wall","wall","wall","wall","wall","wall","wall","wall","plain","plain","plain","plain","plain","plain","plain","plain","plain","plain","plain","plain","plain","plain","plain","plain","plain","plain","plain","plain","plain","plain","plain","plain","plain","wall","wall","wall","wall","wall","wall","wall","wall","wall","wall","wall","wall","wall","wall","wall","wall"]
@@ -162,13 +226,8 @@ sc89functions.planWalls = function (room) {
 
     //TODO account for paths through walls to exits and plan these out.
 
-
-
-
-
     //{"1":"W1N2","5":"W1N0"}
     //console.log(JSON.stringify(Game.map.describeExits(room.name)));
-
 };
 
 sc89functions.planRoads = function(room){
@@ -184,6 +243,9 @@ sc89functions.planRoads = function(room){
         let path = PathFinder.search(room.controller.pos, room_sources[source]);
 
         for (var n = 0; n < path.path.length; n++) {
+            if(sc89functions.posInArray({x: path.path[n].x, y: path.path[n].y}, road_positions)){
+                continue;
+            }
             road_positions.push({
                 x: path.path[n].x,
                 y: path.path[n].y
@@ -205,6 +267,9 @@ sc89functions.planRoads = function(room){
             roomCallback: function() {},
         });
         for (var n = 0; n < path.path.length; n++) {
+            if(sc89functions.posInArray({x: path.path[n].x, y: path.path[n].y}, road_positions)){
+                continue;
+            }
             road_positions.push({
                 x: path.path[n].x,
                 y: path.path[n].y
@@ -213,6 +278,8 @@ sc89functions.planRoads = function(room){
     }
 
     //TODO should check the road_positions array to see if it already contains this postion?
+
+
 
     for (var n = 0; n < road_positions.length; n++) {
         room.visual.drawCross(road_positions[n].x,road_positions[n].y, {color: '#6FB9E1'});
@@ -243,6 +310,26 @@ sc89functions.buildRoads = function(room){
     }
 };
 
+sc89functions.buildExtensions = function(room){
+    //Building Extensions.
+    if(room.memory.extensions){
+        extension_count = room.find(STRUCTURE_EXTENSION);
+        var extension_pos = room.memory.extensions;
+        var extension_limit = {0: 0, 1: 0, 2: 5, 3: 10, 4: 20, 5: 30, 6: 40, 7: 50, 8: 60};
+        var room_limit = extension_limit[room.controller.level];
+        if(extension_count.length < room_limit){
+            for (var n = 0; n < extension_pos.length; n++) {
+                var x = extension_pos[n].x;
+                var y = extension_pos[n].y;
+                var pos = room.lookAt(x, y);
+                if(pos[0].type !== 'structure' || pos[0].type !== 'road'){
+                    room.createConstructionSite(x,y, STRUCTURE_EXTENSION);
+                }
+            }
+        }
+    }
+};
+
 
 sc89functions.checkStore = function(room){
     //if a storage pos is defined
@@ -262,7 +349,9 @@ sc89functions.setExitPos = function(room) {
 
 };
 
-sc89functions.posNear = function (x, y, room) {
+//random = single random pos, else all near free
+//allow = structure type thats allowed to be in free positions (for planning)
+sc89functions.posNear = function (x, y, room, random, allow) {
     //console.log(JSON.stringify(exit_tiles));
     var pos_free = [];
     //get controller x/y
@@ -275,13 +364,41 @@ sc89functions.posNear = function (x, y, room) {
         for(var n = 0; n < 3; n++){
             var new_x = (parseInt(x_pos) + parseInt(n));
             var new_y = (parseInt(y_pos) + parseInt(p));
-            if(Game.map.getTerrainAt(new_x, new_y, room.name) === 'plain') {
+            var tile = Game.map.getTerrainAt(new_x, new_y, room.name);
+            var pos = room.lookAt(new_x, new_y);
+            if(typeof(pos[0].structure) !== "undefined"){
+                if(pos[0].structure.structureType === allow){
+                    pos_free.push({
+                        x: new_x,
+                        y: new_y
+                    });
+                    continue;
+                }
+            }
+            if((tile === 'plain' || tile === 'swamp') && (pos[0].type !== 'structure' && pos[0].type !== 'road')) {
                 pos_free.push({
                     x: new_x,
                     y: new_y
-                })
+                });
+                continue;
             }
         }
     }
-    return pos_free[Math.floor(Math.random()*pos_free.length)];
+    if(random){
+        return pos_free[Math.floor(Math.random()*pos_free.length)];
+    }
+    return pos_free;
+};
+
+
+sc89functions.cleanUpStructures = function(room){
+    var extensions = room.find(FIND_MY_STRUCTURES, {
+        filter: { structureType: STRUCTURE_EXTENSION }
+    });
+    for(var n = 0; n < extensions.length; n++){
+        if(sc89functions.posInArray({x: extensions[n].pos.x, y: extensions[n].pos.y}, room.memory.extensions)){
+            continue;
+        }
+        extensions[n].destroy();
+    }
 };

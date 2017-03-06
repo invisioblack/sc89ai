@@ -5,7 +5,7 @@ global.sc89functions = {};
 global.brain = {};
 
 global.config = {
-    visuals: false,
+    visuals: true,
 
     creep_counts: {
         carrier: 3,

@@ -18,6 +18,9 @@ module.exports.loop = function () {
         if (creep.memory.role == 'carrier') {
             roles.carrier.run(creep);
         }
+        if (creep.memory.role == 'fixer') {
+            roles.fixer.run(creep);
+        }
     }
 
     var my_rooms = brain.memory.get_my_room_list();

@@ -22,7 +22,24 @@ exports.run = function(spawn) {
     sc89functions.planWalls(spawn.room);
     sc89functions.checkStore(spawn.room);
     sc89functions.buildRoads(spawn.room);
+    sc89functions.buildExtensions(spawn.room);
+    sc89functions.planExtensions(spawn.room);
+    sc89functions.cleanUpStructures(spawn.room);
 
+
+
+    if(config.visuals === true){
+        road_positions = spawn.room.memory.roads;
+        for (var n = 0; n < road_positions.length; n++) {
+            spawn.room.visual.drawCross(road_positions[n].x,road_positions[n].y, {color: '#6FB9E1'});
+        }
+
+        extension_positions = spawn.room.memory.extensions;
+        for (var n = 0; n < extension_positions.length; n++) {
+            spawn.room.visual.drawCross(extension_positions[n].x,extension_positions[n].y, {color: '#55AA55'});
+        }
+
+    }
 
     if(spawn.room.energyAvailable >= 300){
 
@@ -54,11 +71,13 @@ exports.run = function(spawn) {
 
         //check the room has 1 fixer
         if(spawn.room.memory.fixer < config.creep_counts.fixer){
-            if(roles.fixer.build(spawn, spawn.room.controller.id)){
+            if(roles.fixer.build(spawn)){
                 spawn.room.memory.fixer = spawn.room.memory.fixer + 1;
                 return;
             }
         }
+
+        var workerBody = [MOVE, MOVE, CARRY, CARRY, WORK, WORK];
 
         if(spawn.room.find(FIND_CONSTRUCTION_SITES).length > 0) {
             spawn.createCreep(workerBody, 'b1', {role: 'stucturer'});
